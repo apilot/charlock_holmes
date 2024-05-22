@@ -1,10 +1,10 @@
-require 'mkmf'
+require "mkmf"
 
 if `which make`.strip.empty?
-  STDERR.puts "\n\n"
-  STDERR.puts "***************************************************************************************"
-  STDERR.puts "*************** make required (apt-get install make build-essential) =( ***************"
-  STDERR.puts "***************************************************************************************"
+  warn "\n\n"
+  warn "***************************************************************************************"
+  warn "*************** make required (apt-get install make build-essential) =( ***************"
+  warn "***************************************************************************************"
   exit(1)
 end
 
@@ -14,41 +14,41 @@ end
 
 ldflags = cppflags = nil
 
-if RbConfig::CONFIG["host_os"] =~ /darwin/
+if /darwin/.match?(RbConfig::CONFIG["host_os"])
   begin
     brew_prefix = `brew --prefix icu4c`.chomp
-    ldflags   = "#{brew_prefix}/lib"
-    cppflags  = "#{brew_prefix}/include"
-    pkg_conf  = "#{brew_prefix}/lib/pkgconfig"
+    ldflags = "#{brew_prefix}/lib"
+    cppflags = "#{brew_prefix}/include"
+    pkg_conf = "#{brew_prefix}/lib/pkgconfig"
     # pkg_config should be less error prone than parsing compiler
     # commandline options, but we need to set default ldflags and cpp flags
     # in case the user doesn't have pkg-config installed
-    ENV['PKG_CONFIG_PATH'] ||= pkg_conf
+    ENV["PKG_CONFIG_PATH"] ||= pkg_conf
   rescue
   end
 end
 
-dir_config 'icu', cppflags, ldflags
+dir_config "icu", cppflags, ldflags
 
 pkg_config("icu-i18n")
 pkg_config("icu-io")
 pkg_config("icu-uc")
 
-$CXXFLAGS << ' -std=c++11' unless $CXXFLAGS.include?("-std=")
+$CXXFLAGS << " -std=c++14" unless $CXXFLAGS.include?("-std=")
 
-unless have_library 'icui18n' and have_header 'unicode/ucnv.h'
-  STDERR.puts "\n\n"
-  STDERR.puts "***************************************************************************************"
-  STDERR.puts "*********** icu required (brew install icu4c or apt-get install libicu-dev) ***********"
-  STDERR.puts "***************************************************************************************"
+unless have_library "icui18n" and have_header "unicode/ucnv.h"
+  warn "\n\n"
+  warn "***************************************************************************************"
+  warn "*********** icu required (brew install icu4c or apt-get install libicu-dev) ***********"
+  warn "***************************************************************************************"
   exit(1)
 end
 
-have_library 'z' or abort 'libz missing'
-have_library 'icuuc' or abort 'libicuuc missing'
-have_library 'icudata' or abort 'libicudata missing'
+have_library "z" or abort "libz missing"
+have_library "icuuc" or abort "libicuuc missing"
+have_library "icudata" or abort "libicudata missing"
 
-$CFLAGS << ' -Wall -funroll-loops'
-$CFLAGS << ' -Wextra -O0 -ggdb3' if ENV['DEBUG']
+$CFLAGS << " -Wall -funroll-loops"
+$CFLAGS << " -Wextra -O0 -ggdb3" if ENV["DEBUG"]
 
-create_makefile 'charlock_holmes/charlock_holmes'
+create_makefile "charlock_holmes/charlock_holmes"
